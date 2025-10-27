@@ -17,7 +17,8 @@ def vids(
     count = 0
     
     model = load_genconvit(config, net, ed_weight, vae_weight, fp16)
-
+    print(net)
+    exit()
     for filename in os.listdir(root_dir):
         curr_vid = os.path.join(root_dir, filename)
 
@@ -292,10 +293,10 @@ def gen_parser():
         "--s", help="model size type: tiny, large.",
     )
     parser.add_argument(
-        "--e", nargs='?', const='genconvit_ed_inference', default='genconvit_ed_inference', help="weight for ed.",
+        "--e", nargs='?', const='genconvit_ed_inference', default=None, help="weight for ed.",
     )
     parser.add_argument(
-        "--v", '--value', nargs='?', const='genconvit_vae_inference', default='genconvit_vae_inference', help="weight for vae.",
+        "--v", '--value', nargs='?', const='genconvit_vae_inference', default=None, help="weight for vae.",
     )
     
     parser.add_argument("--fp16", type=str, help="half precision support")
@@ -307,18 +308,18 @@ def gen_parser():
     fp16 = True if args.fp16 else False
 
     net = 'genconvit'
-    ed_weight = 'genconvit_ed_inference'
-    vae_weight = 'genconvit_vae_inference'
 
+    ed_weight = None
+    vae_weight = None
     if args.e and args.v:
-        ed_weight = args.e
-        vae_weight = args.v
+        ed_weight = 'genconvit_ed_inference'
+        vae_weight = 'genconvit_vae_inference'
     elif args.e:
         net = 'ed'
-        ed_weight = args.e
+        ed_weight = 'genconvit_ed_inference'
     elif args.v:
         net = 'vae'
-        vae_weight = args.v
+        vae_weight = 'genconvit_vae_inference'
     
         
     print(f'\nUsing {net}\n')  
@@ -336,6 +337,7 @@ def gen_parser():
 def main():
     start_time = perf_counter()
     path, dataset, num_frames, net, fp16, ed_weight, vae_weight = gen_parser()
+    
     result = (
         globals()[dataset](ed_weight, vae_weight, path, dataset, num_frames, net, fp16)
         if dataset in ["dfdc", "faceforensics", "timit", "celeb"]
